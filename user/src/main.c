@@ -11,8 +11,8 @@ void Modbus_Data_Init(void);
 void task_10ms(void);
 void task_50ms(void);
 uint16_t  Input_Result[2] = {0,0};
-uint8_t result =0;
-u8 test = 0;
+uint8_t result =0,result1 = 0;
+u8 test = 1,test1 = 1;
 u8 test_send = 0;
 void main(void)
 {
@@ -64,16 +64,7 @@ void main(void)
 
    while(1)
    {
-	   if(test == 1)
-	   {
 
-		   result = ModbusMaster_readInputRegisters(0x01,0x2, 2);
-		   		if (result == 0x00)
-		   		{
-		   			Input_Result[0] = ModbusMaster_getResponseBuffer(0x00);
-		   			Input_Result[1] = ModbusMaster_getResponseBuffer(0x01);
-		   		}
-	   }
 	   if(test_send == 1)
 	   {
 		   test_send = 0;
@@ -105,13 +96,30 @@ void main(void)
  */
 void task_10ms(void)
 {
-	;
+	if(can_rx_msg.rx_update == UPDATE)
+		{
+			can_rx_msg.rx_update = NON_CHANGE;
+			CAN_BOOT_ExecutiveCommand(&can_rx_msg);
+		}
 }
 void task_50ms(void)
 {
-	if(can_rx_msg.rx_update == UPDATE)
-	{
-		can_rx_msg.rx_update = NON_CHANGE;
-		CAN_BOOT_ExecutiveCommand(&can_rx_msg);
-	}
+	   if(test == 1)
+	   {
+
+		   result = ModbusMaster_readInputRegisters(0x01,0x2, 2);
+		   		if (result == 0x00)
+		   		{
+		   			Input_Result[0] = ModbusMaster_getResponseBuffer(0x00);
+		   			Input_Result[1] = ModbusMaster_getResponseBuffer(0x01);
+		   		}
+
+	   }
+	   if(test1 == 1)
+	   {
+	  		ModbusMaster_setTransmitBuffer(0, Input_Result[0]);
+	  		ModbusMaster_setTransmitBuffer(1, Input_Result[1]);
+	  		result1 = ModbusMaster_writeMultipleRegisters(0x02, 0x01,2);
+	   }
+
 }
